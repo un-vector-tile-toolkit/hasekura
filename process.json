@@ -1,0 +1,15 @@
+{
+  "apps": [{
+    "name": "hasekura",
+    "script": "index.js",
+    "env": {
+      "DISPLAY": ":1"
+    }
+  },
+  {
+    "name": "Xvfb",
+    "interpreter": "none",
+    "script": "Xvfb",
+    "args": ":1 -screen 0 1024x768x24"
+  }]
+}
