@@ -12,6 +12,7 @@ const fetch = require('node-fetch')
 const htdocsPath = config.get('htdocsPath')
 const port = config.get('port')
 const wideRenderZoom = config.get('wideRenderZoom')
+const emptyTile = vtpbf({ features: [] })
 let style
 let maps
 
@@ -40,11 +41,13 @@ const dimension = z => {
 }
 
 const mbglRequestQueue = new Queue((req, cb) => {
-  console.log(`${req.kind} ${req.url}`)
-  let etag = ''
+  let etag
+  let status
   fetch(req.url)
     .then(res => {
       etag = res.headers.raw()['etag']
+      status = res.status
+      console.log(`${status} ${req.kind} ${req.url}`)
       return res.buffer()
     })
     .then(buffer => {
@@ -52,7 +55,7 @@ const mbglRequestQueue = new Queue((req, cb) => {
         modified: new Date(),
         expires: new Date(),
         etag: etag,
-        data: buffer
+        data: status === 200 ? buffer : emptyTile
       })
     })
     .catch(e => {
