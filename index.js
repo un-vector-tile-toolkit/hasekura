@@ -41,22 +41,24 @@ const dimension = z => {
 }
 
 const mbglRequestQueue = new Queue((req, cb) => {
-  let etag
-  let status
+  let r = {}
   fetch(req.url)
     .then(res => {
-      etag = res.headers.raw()['etag']
-      status = res.status
-      console.log(`${status} ${req.kind} ${req.url}`)
-      return res.buffer()
+      if (res.headers.get('last-modified')) {
+        r.modified = new Date(res.headers.get('last-modified'))
+      }
+      if (res.headers.get('expires')) {
+        r.expires = new Date(res.headers.get('expires'))
+      }
+      if (res.headers.get('etag')) {
+        r.etag = res.headers.get('etag')
+      }
+console.log(`${res.status} ${req.url} ${JSON.stringify(r)}`)
+      return res.status === 200 ? res.buffer() : emptyTile
     })
     .then(buffer => {
-      cb(null, {
-        modified: new Date(),
-        expires: new Date(),
-        etag: etag,
-        data: status === 200 ? buffer : emptyTile
-      })
+      r.data = buffer
+      cb(null, r)
     })
     .catch(e => {
       console.log(`${req.url} was caught.`)
