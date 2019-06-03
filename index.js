@@ -37,7 +37,7 @@ mbgl.on('message', msg => {
 })
 
 const dimension = z => {
-  return z > wideRenderZoom ? 1024 : 512
+  return z > wideRenderZoom ? 512 : 256
 }
 
 const mbglRequestQueue = new Queue((req, cb) => {
@@ -75,7 +75,7 @@ const prepareMaps = () => { return genericPool.createPool({
           cb(null, data)
         })
       },
-      mode: 'tile',
+      mode: 'tile'
     })
     map.load(style)
     return map
@@ -94,7 +94,7 @@ const tileQueue = new Queue((r, cb) => {
   const d = dimension(z)
   maps.acquire().then(map => {
     map.render({
-      zoom: z, center: center,
+      zoom: z - 1, center: center,
       width: d, height: d
     }, (err, buffer) => {
       maps.release(map)
@@ -106,7 +106,7 @@ const tileQueue = new Queue((r, cb) => {
       })
       if (z > wideRenderZoom) {
         image = image.extract({
-          left: 256, top: 256, width: 512, height: 512
+          left: 128, top: 128, width: 256, height: 256 
         })
       }
       cb(null, image)
